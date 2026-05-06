@@ -1,5 +1,4 @@
-//this is a cmment
-module alu_param #(parameter n=8,m=4 )(OPA,OPB,CIN,CLK,RST,CE,MODE,INP_VALID,CMD,ERR,RES,OFLOW,COUT,G,L,E);
+module alu_param #(parameter n=4,m=4 )(OPA,OPB,CIN,CLK,RST,CE,MODE,INP_VALID,CMD,ERR,RES,OFLOW,COUT,G,L,E);
 input [n-1:0]OPA,OPB;
 input CIN,CLK,RST,CE,MODE;
 input [1:0]INP_VALID;
@@ -49,7 +48,8 @@ case(CMD)
 0:begin
     if(INP_VALID==2'b11)
         begin
-            RES<=OPA+OPB;
+         RES  <= OPA + OPB;
+          COUT <= ({1'b0, OPA} + {1'b0, OPB}) > {n{1'b1}};
           
         end
     else
@@ -71,7 +71,7 @@ case(CMD)
     if(INP_VALID==2'b11)
         begin
             RES<=OPA+OPB+CIN;
-            COUT<=RES[n];
+               COUT <= ({1'b0, OPA} + {1'b0, OPB}) > {n{1'b1}};
         end
     else
         ERR<=1'b1;
@@ -80,7 +80,7 @@ case(CMD)
     if(INP_VALID==2'b11)
         begin
             RES<=OPA-OPB-CIN;
-            OFLOW<=(OPB>OPA)?1:0;
+            OFLOW<=({1'b0,OPB}+CIN)>OPA;
         end
     else
         ERR<=1'b1;
@@ -147,16 +147,18 @@ case(CMD)
             else if(count ==2'd2)
                 begin
                     RES<=temp_res;
-                    temp_res<=0;
-                    count<=2'd0;
+                    temp_res<=((OPA+1)*(OPB+1));
+                    count<=2'd1;
                 end
             else
                 count<=count+1;
         end
      else
         begin
-            if(count_3==2'd1)
+            if(count_3==2'd2)
+            begin
                 ERR<=1'b1;
+            end
             else
                 count_3<=count_3+1;
         end
@@ -169,16 +171,18 @@ case(CMD)
             else if(count_2 ==2'd2)
                 begin
                     RES<=temp_res_2;
-                    temp_res_2<=0;
-                      count_2<=2'd0;
+                    temp_res_2<=((OPA<<1)*(OPB));
+                      count_2<=2'd1;
                 end
             else
                 count_2<=count_2+1;
         end
      else
            begin
-            if(count_4==2'd1)
+            if(count_4==2'd2)
+               begin
                 ERR<=1'b1;
+               end
             else
                 count_4<=count_4+1;
         end
@@ -187,7 +191,6 @@ case(CMD)
     if (INP_VALID == 2'b11) begin
         RES <= $signed(OPA) + $signed(OPB);
         OFLOW <= (OPA[n-1] == OPB[n-1]) && (RES[n-1] != OPA[n-1]);
-        COUT <= RES[n];
     if ($signed(OPA) > $signed(OPB)) begin
             G <= 1'b1;
         end
@@ -206,7 +209,6 @@ end
     if (INP_VALID == 2'b11) begin
         RES <= $signed(OPA) - $signed(OPB);
         OFLOW <= (OPA[n-1] != OPB[n-1]) && (RES[n-1] != OPA[n-1]);
-        COUT <= RES[n];
         if ($signed(OPA) > $signed(OPB))
         begin
             G <= 1'b1;
@@ -352,3 +354,4 @@ end
 end
 end
 endmodule
+
