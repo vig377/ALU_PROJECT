@@ -1,3 +1,4 @@
+//this is a cmment
 module alu_param #(parameter n=8,m=4 )(OPA,OPB,CIN,CLK,RST,CE,MODE,INP_VALID,CMD,ERR,RES,OFLOW,COUT,G,L,E);
 input [n-1:0]OPA,OPB;
 input CIN,CLK,RST,CE,MODE;
