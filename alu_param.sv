@@ -278,25 +278,25 @@ begin
                 ERR_d <= 1'b1;
         end
         6: begin
-            if(INP_VALID == 2'b01)
+            if(INP_VALID == 2'b01||INP_VALID == 2'b11)
                 RES_d <= {{n{1'b0}},~OPA};
             else
                 ERR_d <= 1'b1;
         end
         7: begin
-            if(INP_VALID == 2'b10)
+            if(INP_VALID == 2'b10||INP_VALID == 2'b11)
                 RES_d <= {{n{1'b0}},~OPB};
             else
                 ERR_d <= 1'b1;
         end
         8: begin
-            if(INP_VALID == 2'b01)
+            if(INP_VALID == 2'b01||INP_VALID == 2'b11)
                 RES_d <={{n{1'b0}}, OPA >> 1};
             else
                 ERR_d <= 1'b1;
         end
         9: begin
-            if(INP_VALID == 2'b01)
+            if(INP_VALID == 2'b01||INP_VALID == 2'b11)
                 RES_d <={{n{1'b0}}, OPA << 1};
             else
                 ERR_d <= 1'b1;
