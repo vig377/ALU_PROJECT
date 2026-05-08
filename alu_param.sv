@@ -12,6 +12,7 @@ wire [shift_width-1:0]rot_amt;
 assign rot_amt=OPB[shift_width-1:0];
 wire [n-1:0] rol_result;
 wire [n-1:0] ror_result;
+reg signed [n:0] sres;
 
 assign rol_result = (OPA << rot_amt) | (OPA >> (n - rot_amt));
 assign ror_result = (OPA >> rot_amt) | (OPA << (n - rot_amt));
@@ -77,7 +78,10 @@ case(CMD)
     if(INP_VALID==2'b11)
         begin
             if(OPB>OPA)
+            begin
+            RES_d <= OPA-OPB;
                OFLOW_d <= 1;
+            end
             else
                RES_d <= OPA-OPB;
         end
@@ -103,31 +107,31 @@ case(CMD)
         ERR_d <= 1'b1;
     end
 4:begin
-    if(INP_VALID==2'b01)
+    if(INP_VALID==2'b01||INP_VALID==2'b11)
         begin
-          RES_d <= OPA+1'b1;
+          RES_d <= OPA+1'b1&{n{1'b1}};
          end
     else
         ERR_d <= 1'b1;
    end
 5:begin
-    if(INP_VALID==2'b01)
+    if(INP_VALID==2'b01||INP_VALID==2'b11)
         begin
-            RES_d <= OPA-1'b1;
+            RES_d <= OPA-1'b1&{n{1'b1}};
         end
     else
         ERR_d <= 1'b1;
    end
 6:begin
-    if(INP_VALID==2'b10)
-        RES_d <= OPB+1'b1;
+    if(INP_VALID==2'b10||INP_VALID==2'b11)
+        RES_d <= OPB+1'b1&{n{1'b1}};
     else
         ERR_d <= 1'b1;
     end
 7:begin
-    if(INP_VALID==2'b10)
+    if(INP_VALID==2'b10||INP_VALID==2'b11)
         begin
-            RES_d <= OPB-1'b1;
+            RES_d <= OPB-1'b1&{n{1'b1}};
         end
     else
         ERR_d <= 1'b1;
@@ -201,8 +205,9 @@ case(CMD)
   end
 11: begin
     if (INP_VALID == 2'b11) begin
-        RES_d   <= $signed(OPA) + $signed(OPB);
-        OFLOW_d <= (OPA[n-1] == OPB[n-1]) && (RES_d[n-1] != OPA[n-1]);
+        sres = $signed(OPA) + $signed(OPB);
+        RES_d <= sres;
+        OFLOW_d <= (OPA[n-1] == OPB[n-1]) && (sres[n-1] != OPA[n-1]);
         if ($signed(OPA) > $signed(OPB))
             G_d <= 1'b1;
         else if ($signed(OPA) < $signed(OPB))
@@ -216,8 +221,9 @@ case(CMD)
 end
 12: begin
     if (INP_VALID == 2'b11) begin
-        RES_d   <= $signed(OPA) - $signed(OPB);
-        OFLOW_d <= (OPA[n-1] != OPB[n-1]) && (RES_d[n-1] != OPA[n-1]);
+        sres = $signed(OPA) - $signed(OPB);
+        RES_d <= sres;
+        OFLOW_d <= (OPA[n-1] != OPB[n-1]) && (sres[n-1] != OPA[n-1]);
         if ($signed(OPA) > $signed(OPB))
             G_d <= 1'b1;
         else if ($signed(OPA) < $signed(OPB))
@@ -237,73 +243,73 @@ begin
     case(CMD)
         0: begin
             if(INP_VALID == 2'b11)
-                RES_d <= OPA & OPB;
+                RES_d <= {{n{1'b0}},(OPA & OPB)};
             else
                 ERR_d <= 1'b1;
         end
         1: begin
             if(INP_VALID == 2'b11)
-                RES_d <= ~(OPA & OPB);
+                RES_d <={{n{1'b0}}, ~(OPA & OPB)};
             else
                 ERR_d <= 1'b1;
         end
         2: begin
             if(INP_VALID == 2'b11)
-                RES_d <= OPA | OPB;
+                RES_d <= {{n{1'b0}},OPA | OPB};
             else
                 ERR_d <= 1'b1;
         end
         3: begin
             if(INP_VALID == 2'b11)
-                RES_d <= ~(OPA | OPB);
+                RES_d <= {{n{1'b0}},~(OPA | OPB)};
             else
                 ERR_d <= 1'b1;
         end
         4: begin
             if(INP_VALID == 2'b11)
-                RES_d <= OPA ^ OPB;
+                RES_d <= {{n{1'b0}},OPA ^ OPB};
             else
                 ERR_d <= 1'b1;
         end
         5: begin
             if(INP_VALID == 2'b11)
-                RES_d <= ~(OPA ^ OPB);
+                RES_d <= {{n{1'b0}},~(OPA ^ OPB)};
             else
                 ERR_d <= 1'b1;
         end
         6: begin
             if(INP_VALID == 2'b01)
-                RES_d <= ~OPA;
+                RES_d <= {{n{1'b0}},~OPA};
             else
                 ERR_d <= 1'b1;
         end
         7: begin
             if(INP_VALID == 2'b10)
-                RES_d <= ~OPB;
+                RES_d <= {{n{1'b0}},~OPB};
             else
                 ERR_d <= 1'b1;
         end
         8: begin
             if(INP_VALID == 2'b01)
-                RES_d <= OPA >> 1;
+                RES_d <={{n{1'b0}}, OPA >> 1};
             else
                 ERR_d <= 1'b1;
         end
         9: begin
             if(INP_VALID == 2'b01)
-                RES_d <= OPA << 1;
+                RES_d <={{n{1'b0}}, OPA << 1};
             else
                 ERR_d <= 1'b1;
         end
         10: begin
             if(INP_VALID == 2'b10||INP_VALID == 2'b11)
-                RES_d <= OPB >> 1;
+                RES_d <= {{n{1'b0}},OPB >> 1};
             else
                 ERR_d <= 1'b1;
         end
         11: begin
             if(INP_VALID == 2'b10||INP_VALID == 2'b11)
-                RES_d <= OPB << 1;
+                RES_d <= {{n{1'b0}},OPB << 1};
             else
                 ERR_d <= 1'b1;
         end
